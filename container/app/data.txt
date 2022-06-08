@@ -1,14 +1,19 @@
 CREATE (usr1:User {name: "Daniel", surname: "Popel", age: 22, email: "www@www.w"})
 CREATE (usr2:User {name: "Eda", surname: "Boba", age: 21, email: "aaa@a.aa"})
+CREATE (usr3:User {name: "Petr", surname: "Filny", age: 21, email: "rrr@ra.r"})
 
 CREATE (grp1:Group {name: "23-5KB", fullName: "Kyberneticka Bezpecnost"})
 CREATE (grp2:Group {name: "23-5VP", fullName: "Voj. piloti"})
+CREATE (grp3:Group {name: "FVT", fullName: "Fakulta vojenskych techlonogii"})
+
+CREATE (gtyp1:GroupType {name: "Uc. skupina", fullName: "Ucebni skupina"})
+CREATE (gtyp2:GroupType {name: "fakulta", fullName: "Fakulta na UO"})
 
 CREATE
 	(grp1)-[:CLEN]->(usr1),
     (grp2)-[:CLEN]->(usr1),
-   	(grp2)-[:CLEN]->(usr2)
-
-
-CREATE (tmp1:Temp {name: "Daniel", fullName: "Popel"})
-CREATE (tmp2:Temp {name: "Eda", fullName: "Boba"})
+   	(grp2)-[:CLEN]->(usr2),
+    (grp2)-[:CLEN]->(usr3),
+    (gtyp1)-[:OBSAHUJE]->(grp1),
+    (gtyp1)-[:OBSAHUJE]->(grp2),
+    (gtyp2)-[:OBSAHUJE]->(grp3)

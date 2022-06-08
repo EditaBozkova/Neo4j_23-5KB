@@ -62,7 +62,7 @@ class Group(BaseModel):
     fullName = Property()
 
     users = RelatedTo('User', 'CLEN')
-    groupType = RelatedTo('GroupType', "PATRI")
+    groupsType = RelatedTo('GroupType', "PATRI")
 
     def fetch(self, _id):
         return Group.match(graph, _id).first()
@@ -72,6 +72,12 @@ class Group(BaseModel):
             **user[0].as_dict(),
             **user[1]
         } for user in self.users._related_objects]
+
+    def fetch_groupTypes(self):
+        return [{
+            **groupType[0].as_dict(),
+            **groupType[1]
+        } for groupType in self.groupsType._related_objects] 
 
     def as_dict(self):
         return {
@@ -87,7 +93,7 @@ class GroupType(BaseModel):
     groups = RelatedTo('Group', 'OBSAHUJE')
 
     def fetch(self, _id):
-        return Group.match(graph, _id).first()
+        return GroupType.match(graph, _id).first()
 
     def fetch_groups(self):
         return [{
@@ -99,20 +105,4 @@ class GroupType(BaseModel):
         return {
             '_id': self.__primaryvalue__,
             'name': self.name
-        }
-
-
-class Temp(BaseModel):
-    name = Property()
-    fullName = Property()
-
-    def fetch(self, _id):
-        return Temp.match(graph, _id).first()
-
-
-    def as_dict(self):
-        return {
-            '_id': self.__primaryvalue__,
-            'name': self.name,
-            'fullName': self.fullName
         }
