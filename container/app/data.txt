@@ -1,0 +1,14 @@
+CREATE (usr1:User {name: "Daniel", surname: "Popel", age: 22, email: "www@www.w"})
+CREATE (usr2:User {name: "Eda", surname: "Boba", age: 21, email: "aaa@a.aa"})
+
+CREATE (grp1:Group {name: "23-5KB", fullName: "Kyberneticka Bezpecnost"})
+CREATE (grp2:Group {name: "23-5VP", fullName: "Voj. piloti"})
+
+CREATE
+	(grp1)-[:CLEN]->(usr1),
+    (grp2)-[:CLEN]->(usr1),
+   	(grp2)-[:CLEN]->(usr2)
+
+
+CREATE (tmp1:Temp {name: "Daniel", fullName: "Popel"})
+CREATE (tmp2:Temp {name: "Eda", fullName: "Boba"})
