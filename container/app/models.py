@@ -32,77 +32,109 @@ class BaseModel(GraphObject):
     def save(self):
         graph.push(self)
 
+    def update(self):
+        graph.update(self)
 
-class User(BaseModel):
-    __primarykey__ = 'email'
+    def delete(self):
+        graph.delete(self)
 
+
+class Person(BaseModel):
+    id = Property()
     name = Property()
     surname = Property()
     age = Property()
-    email = Property()
+    memberships = RelatedTo('Membership', 'PATRI')
 
     def fetch(self):
-        user = self.match(graph, self.email).first()
-        if user is None:
-            raise GraphQLError(f'"{self.email}" has not been found in our customers list.')
+        return Person.match(graph, self.id).first()
 
-        return user
+    def fetch_memberships(self):
+        return [{
+            **membership[0].as_dict(),
+            **membership[1]
+        } for membership in self.memberships._related_objects]
 
     def as_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'surname': self.surname,
-            'age': self.age,
-            'email': self.email
+            'age': self.age
         }
 
 
 class Group(BaseModel):
+    id = Property()
     name = Property()
-    fullName = Property()
+    groupType = RelatedTo('GroupType', "PATRI")
+    members = RelatedTo('Person', 'CLEN')
 
-    users = RelatedTo('User', 'CLEN')
-    groupsType = RelatedTo('GroupType', "PATRI")
+    def fetch(self):
+        return Group.match(graph, self.id).first()
 
-    def fetch(self, _id):
-        return Group.match(graph, _id).first()
-
-    def fetch_users(self):
+    def fetch_members(self):
         return [{
-            **user[0].as_dict(),
-            **user[1]
-        } for user in self.users._related_objects]
+            **member[0].as_dict(),
+            **member[1]
+        } for member in self.members._related_objects]
 
     def fetch_groupTypes(self):
         return [{
-            **groupType[0].as_dict(),
-            **groupType[1]
-        } for groupType in self.groupsType._related_objects] 
+            **groupTyp[0].as_dict(),
+            **groupTyp[1]
+        } for groupTyp in self.groupType._related_objects] 
 
     def as_dict(self):
         return {
-            '_id': self.__primaryvalue__,
-            'name': self.name,
-            'fullName': self.fullName
+            'id': self.id,
+            'name': self.name
         }
 
 
 class GroupType(BaseModel):
+    id = Property()
     name = Property()
 
+    def fetch(self):
+        return GroupType.match(graph, self.id).first()
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
+
+class RoleType(BaseModel):
+    id = Property()
+    name = Property()
+
+    def fetch(self):
+        return RoleType.match(graph, self.id).first()
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
+
+class Membership(BaseModel):
+    roleType = RelatedTo('RoleType', 'ROLE')
     groups = RelatedTo('Group', 'OBSAHUJE')
 
     def fetch(self, _id):
-        return GroupType.match(graph, _id).first()
+        return Membership.match(graph, _id).first()
 
+    def fetch_roles(self):
+        return [{
+            **role[0].as_dict(),
+            **role[1]
+        } for role in self.roleType._related_objects]
+        
     def fetch_groups(self):
         return [{
             **group[0].as_dict(),
             **group[1]
         } for group in self.groups._related_objects]
-
-    def as_dict(self):
-        return {
-            '_id': self.__primaryvalue__,
-            'name': self.name
-        }
