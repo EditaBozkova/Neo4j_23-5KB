@@ -12,6 +12,14 @@ graph = Graph(
 )
 
 
+g_id=0
+
+def get_id():
+    global g_id
+    g_id=g_id+1
+    return str(g_id)
+
+
 class BaseModel(GraphObject):
     """
     Implements some basic functions to guarantee some standard functionality
@@ -32,69 +40,167 @@ class BaseModel(GraphObject):
     def save(self):
         graph.push(self)
 
+    def update(self):
+        graph.update(self)
 
-class User(BaseModel):
-    __primarykey__ = 'email'
+    def delete(self):
+        graph.delete(self)
 
+
+class Person(BaseModel):
+    __primarykey__ = 'id'
+
+    id = Property()
     name = Property()
     surname = Property()
     age = Property()
-    email = Property()
+    memberships = RelatedTo('Membership', 'PATRI')
 
     def fetch(self):
-        user = self.match(graph, self.email).first()
-        if user is None:
-            raise GraphQLError(f'"{self.email}" has not been found in our customers list.')
+        person = self.match(graph, self.id).first()
+        if person is None:
+            raise GraphQLError(f'"{self.id}" has not been found in person list.')
 
-        return user
+        return person
+
+    def deleteNode(self):
+        person = self.match(graph, self.id).first()
+        Person.delete(person)
+
+    def AddPersontoG(self, idP, idG):
+        graph.run("""
+            MATCH (a:Person) WHERE a.id="{}"
+            MATCH (b:Group) WHERE b.id="{}"
+            CREATE r=(b)-[:CLEN]->(a)
+        """.format(idP, idG))
+
+    def RemovePersonFG(self, id):
+        graph.run("""
+            MATCH  (n {id: "{}"})-[r:KNOWS]->()
+            DELETE r
+        """.format(id))
+
+    def fetch_memberships(self):
+        return [{
+            **membership[0].as_dict(),
+            **membership[1]
+        } for membership in self.memberships._related_objects]
 
     def as_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'surname': self.surname,
-            'age': self.age,
-            'email': self.email
+            'age': self.age
         }
 
 
 class Group(BaseModel):
+    __primarykey__ = 'id'
+
+    id = Property()
     name = Property()
-    fullName = Property()
+    groupType = RelatedTo('GroupType', 'CLENEM')
+    members = RelatedTo('Person', 'CLEN')
 
-    users = RelatedTo('User', 'CLEN')
-    groupsType = RelatedTo('GroupType', "PATRI")
+    def fetch(self):
+        group = self.match(graph, self.id).first()
+        if group is None:
+            raise GraphQLError(f'"{self.id}" has not been found in group list.')
 
-    def fetch(self, _id):
-        return Group.match(graph, _id).first()
+        return group
 
-    def fetch_users(self):
+    def deleteNode(self):
+        group = self.match(graph, self.id).first()
+        Group.delete(group)
+
+    def fetch_members(self):
         return [{
-            **user[0].as_dict(),
-            **user[1]
-        } for user in self.users._related_objects]
+            **member[0].as_dict(),
+            **member[1]
+        } for member in self.members._related_objects]
 
     def fetch_groupTypes(self):
         return [{
-            **groupType[0].as_dict(),
-            **groupType[1]
-        } for groupType in self.groupsType._related_objects] 
+            **groupTyp[0].as_dict(),
+            **groupTyp[1]
+        } for groupTyp in self.groupType._related_objects] 
 
     def as_dict(self):
         return {
-            '_id': self.__primaryvalue__,
-            'name': self.name,
-            'fullName': self.fullName
+            'id': self.id,
+            'name': self.name
         }
 
 
 class GroupType(BaseModel):
+    __primarykey__ = 'id'
+
+    id = Property()
     name = Property()
 
+    def fetch(self):
+        membership = self.match(graph, self.id).first()
+        if membership is None:
+            raise GraphQLError(f'"{self.id}" has not been found in group Type list.')
+
+        return membership
+
+    def deleteNode(self):
+        groupType = self.match(graph, self.id).first()
+        GroupType.delete(groupType)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
+
+class RoleType(BaseModel):
+    __primarykey__ = 'id'
+
+    id = Property()
+    name = Property()
+
+    def fetch(self):
+        roleType = self.match(graph, self.id).first()
+        if roleType is None:
+            raise GraphQLError(f'"{self.id}" has not been found in role Type list.')
+
+        return roleType
+
+    def deleteNode(self):
+        roleType = self.match(graph, self.id).first()
+        RoleType.delete(roleType)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
+
+class Membership(BaseModel):
+    __primarykey__ = 'id'
+
+    id = Property()
+
+    roleType = RelatedTo('RoleType', 'ROLE')
     groups = RelatedTo('Group', 'OBSAHUJE')
 
-    def fetch(self, _id):
-        return GroupType.match(graph, _id).first()
+    def fetch(self):
+        roleType = self.match(graph, self.id).first()
+        if roleType is None:
+            raise GraphQLError(f'"{self.id}" has not been found in role Type list.')
 
+        return roleType
+    def fetch_roles(self):
+        return [{
+            **role[0].as_dict(),
+            **role[1]
+        } for role in self.roleType._related_objects]
+        
     def fetch_groups(self):
         return [{
             **group[0].as_dict(),
@@ -104,5 +210,4 @@ class GroupType(BaseModel):
     def as_dict(self):
         return {
             '_id': self.__primaryvalue__,
-            'name': self.name
         }

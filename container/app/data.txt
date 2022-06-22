@@ -1,19 +1,19 @@
-CREATE (usr1:User {name: "Daniel", surname: "Popel", age: 22, email: "www@www.w"})
-CREATE (usr2:User {name: "Eda", surname: "Boba", age: 21, email: "aaa@a.aa"})
-CREATE (usr3:User {name: "Petr", surname: "Filny", age: 21, email: "rrr@ra.r"})
+CREATE (usr1:Person {id: "1", name: "Daniel", surname: "Popel", age: 22})
+CREATE (usr2:Person {id: "2", name: "Eda", surname: "Boba", age: 21})
+CREATE (usr3:Person {id: "3", name: "Petr", surname: "Filny", age: 21})
 
-CREATE (grp1:Group {name: "23-5KB", fullName: "Kyberneticka Bezpecnost"})
-CREATE (grp2:Group {name: "23-5VP", fullName: "Voj. piloti"})
-CREATE (grp3:Group {name: "FVT", fullName: "Fakulta vojenskych techlonogii"})
+CREATE (grp1:Group {id: "4", name: "23-5KB"})
+CREATE (grp2:Group {id: "5", name: "23-5VP"})
+CREATE (grp3:Group {id: "6", name: "FVT"})
 
-CREATE (gtyp1:GroupType {name: "Uc. skupina", fullName: "Ucebni skupina"})
-CREATE (gtyp2:GroupType {name: "fakulta", fullName: "Fakulta na UO"})
+CREATE (gtyp1:GroupType {id: "7", name: "Uc. skupina"})
+CREATE (gtyp2:GroupType {id: "8", name: "fakulta"})
 
 CREATE
 	(grp1)-[:CLEN]->(usr1),
     (grp2)-[:CLEN]->(usr1),
    	(grp2)-[:CLEN]->(usr2),
     (grp2)-[:CLEN]->(usr3),
-    (gtyp1)-[:OBSAHUJE]->(grp1),
-    (gtyp1)-[:OBSAHUJE]->(grp2),
-    (gtyp2)-[:OBSAHUJE]->(grp3)
+    (grp1)-[:CLENEM]->(gtyp1),
+    (grp2)-[:CLENEM]->(gtyp1),
+    (grp3)-[:CLENEM]->(gtyp2)
