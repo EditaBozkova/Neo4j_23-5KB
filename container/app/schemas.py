@@ -1,4 +1,3 @@
-from sre_constants import SUCCESS
 import graphene
 
 from .models import get_id, Person, Group, GroupType, Membership, RoleType
